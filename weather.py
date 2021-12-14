@@ -49,15 +49,15 @@ def getWeather(city: str, date: str =None):
             pressure = main['pressure']
 
             report = main['weather']
-
-            print(f"{city:-^30}")
-            print(f"Температура: {temperature}")
-            print(f"Влажность: {humidity}%")
-            print(f"Давление: {pressure}s")
-            print(f"Описание: {report[0]['description'].title()}")
+            
+            return f"{city:-^30}\n" + \
+                    f"Температура: {temperature}\n" + \
+                    f"Влажность: {humidity}%\n" + \
+                    f"Давление: {pressure}\n" + \
+                    f"Описание: {report[0]['description'].title()}"
 
         else:
-            print("Где-то ошибка")
+            return "В твоём запросе есть ошибка"
 
     else:
         BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
@@ -81,15 +81,12 @@ def getWeather(city: str, date: str =None):
 
             report = data['weather']
 
-            print(f"{city:-^30}")
-            print(f"Температура: {temperature}")
-            print(f"Влажность: {humidity}%")
-            print(f"Давление: {pressure}")
-            print(f"Описание: {report[0]['description'].title()}")
+
+            return f"{city:-^30}\n" + \
+                    f"Температура: {temperature}\n" + \
+                    f"Влажность: {humidity}%\n" + \
+                    f"Давление: {pressure}\n" + \
+                    f"Описание: {report[0]['description'].title()}"
 
         else:
-            print("Где-то ошибка")
-    
-
-getWeather("Санкт-Петербург", "10.12")
-getWeather("Санкт-Петербург")
+            return "В твоём запросе есть ошибка"
