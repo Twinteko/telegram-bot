@@ -1,54 +1,44 @@
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-    CallbackContext,
-)
-from telegram import Update
+from aiogram import Bot, types
+from aiogram.dispatcher import Dispatcher
+from aiogram.utils import executor
 import logging
 from token1 import Token
 import weather
 
+bot = Bot(token=Token)
+dp = Dispatcher(bot)
+
 logging.basicConfig(format='%(asctime)s-%(name)s-%(levelname)s-%(message)s',level=logging.INFO)
 logger = logging.getLogger(__name__)
     
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(f'Привет, {update.effective_user.first_name}, чтобы узнать погоду нужно написать ' + \
-                                '"/pogoda" и через пробел:\n1. Город (официальное назавание),\n' + \
-                                '2. Пробел,\n3. Дата (Формат - день.месяц (цифрами)), максимум 5 дней назад.\n(Можно без даты, тогда получишь текущую погоду)')
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    await message.answer(f'Привет, чтобы узнать погоду нужно написать:\n' + \
+                         '1. Город (официальное назавание),\n' + \
+                         '2. Пробел,\n' + \
+                         '3. Дата (Формат - день.месяц.год (цифрами)), максимум 5 дней назад и 7 дней вперёд от текущего дня.\n' + \
+                         '(Можно без даты, тогда получишь текущую погоду)')
     
-    update.message.reply_text('Вот тебе пример: "/pogoda Санкт-Петерубрг" покажет текущую погоду в Питере.\n' + \
-                                'А вот "/pogoda Санкт-Петерубрг 12.12" покажет погоду 12 декабря\n(Команду лучше не копировать)')
+    await message.answer('Вот тебе пример: "Санкт-Петерубрг" покажет текущую погоду в Питере.\n' + \
+                        'А вот "Санкт-Петерубрг 10.12.2022" покажет погоду 10 декабря 2022 года\n')
 
-def getWeatherBot(update: Update, context: CallbackContext) -> None:
-    if len(context.args) < 1:
-        update.message.reply_text('Ты не указал город, мужик')
+@dp.message_handler()
+async def getWeatherBot(message: types.Message):
+    if len(message.text.split(" ")) < 1:
+        message.answer('Ты не указал город, мужик')
         return "Прикол"
     
-    update.message.reply_text('Смотрим погоду...')
+    await message.answer('Смотрим погоду...')
 
-    if len(context.args) > 1:
-        response = weather.getWeather(context.args[0], context.args[1])
-
-    else:
-        response = weather.getWeather(context.args[0])
+    try:
+        if len(message.text.split(" ")) > 1:
+            response = weather.getWeather(message.text.split(" ")[0], message.text.split(" ")[1])
+        else:
+            response = weather.getWeather(message.text.split(" ")[0])
     
-    update.message.reply_text(response)
-    
-
-
-def main() -> None:
-    updater = Updater(token = Token)
-    dispatcher = updater.dispatcher
-
-    start_handler = CommandHandler('start', start)
-    getWeather_handler = CommandHandler('pogoda', getWeatherBot)
-    
-    dispatcher.add_handler(start_handler)
-    dispatcher.add_handler(getWeather_handler)
-
-    updater.start_polling()
-    updater.idle()
-
+        await message.answer(response)
+    except:
+        await message.answer("В твоём запросе есть ошибка")
 
 if __name__ == '__main__':
-    main()
+    executor.start_polling(dp)
